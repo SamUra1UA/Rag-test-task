@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-navy-900: #142354;
+  --brand-navy-800: #1d326b;
+  --brand-navy-700: #29427d;
+
+  --brand-gold-500: #d3ae5b;
+  --brand-gold-600: #b99243;
+  --brand-gold-100: #f5ebd4;
+
+  --background-primary: #f1f1ef;
+  --background-secondary: #e8e8e5;
+  --surface: #ffffff;
+
+  --text-primary: #142354;
+  --text-secondary: #666d7a;
+  --text-inverse: #ffffff;
+
+  --border-default: #dedcd5;
+  --border-accent: #d3ae5b;
+
+  --success: #35705a;
+  --warning: #9a6d23;
+  --error: #b64646;
+}
+
+@layer base {
+  html,
+  body {
+    @apply bg-background-primary text-text-primary antialiased;
+  }
+
+  a {
+    @apply text-navy-800;
+  }
+
+  a:hover {
+    @apply text-gold-600;
+  }
+
+  /* Visible keyboard focus everywhere (WCAG AA). */
+  :focus-visible {
+    outline: 2px solid var(--brand-gold-500);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .section-heading {
+    @apply text-sm font-bold uppercase tracking-[0.03em] text-navy-900;
+  }
+
+  .field-label {
+    @apply text-xs font-bold uppercase tracking-[0.04em] text-text-secondary;
+  }
+
+  .meta-text {
+    @apply text-xs font-medium leading-4 text-text-secondary;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 8px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}

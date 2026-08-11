@@ -1,0 +1,11 @@
+.env
+node_modules/
+.next/
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+k8s/
+scripts/seed-sample-docs-job.yaml
+.github
+/scripts

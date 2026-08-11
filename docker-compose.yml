@@ -1,0 +1,68 @@
+services:
+  # Vector database (client-server mode). For a heavier production setup,
+  # swap this for Supabase/pgvector as described in PROPOSAL.md, section 2.
+  chroma:
+    image: chromadb/chroma:latest
+    ports:
+      - "8002:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    ports:
+      - "8001:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_CHAT_MODEL=${OPENAI_CHAT_MODEL:-gpt-4o-mini}
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8000
+      # LLM_PROVIDER=ollama switches generation to the self-hosted model
+      # below. Requires `docker compose --profile ollama up` and pulling a
+      # model once: `docker compose exec ollama ollama pull mistral`.
+      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-mistral}
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - AUDIT_LOG_PATH=/app/data/audit.log
+    volumes:
+      - audit_data:/app/data
+    depends_on:
+      - chroma
+    restart: unless-stopped
+
+  # Self-hosted LLM (Ollama, not vLLM — this stack targets non-NVIDIA
+  # hardware where vLLM's CUDA requirement doesn't apply). Not started by
+  # default; run with `docker compose --profile ollama up -d --build` and set
+  # LLM_PROVIDER=ollama to actually use it.
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ollama"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # NEXT_PUBLIC_* is inlined at build time, so it must be passed here
+        # as well as at runtime.
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8001}
+    ports:
+      - "3000:3000"
+    environment:
+      # Browser-side fetch calls hit the host-mapped backend port directly,
+      # not the internal "backend" service name (browser is outside the
+      # Docker network).
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8001}
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  chroma_data:
+  audit_data:
+  ollama_data:
